@@ -1,0 +1,229 @@
+﻿CREATE TABLE PROJECTS (
+	PROJECT_ID	number(9)	not null constraint project_pk primary key,
+	PROJECT_NAME		varchar2(100)	not null,
+	COMMENTS	varchar2(1000)
+	);
+INSERT INTO PROJECTS (PROJECT_ID, PROJECT_NAME) VALUES (1, 'Big Project');
+INSERT INTO PROJECTS (PROJECT_ID, PROJECT_NAME) VALUES (2, 'Another Project');
+INSERT INTO PROJECTS (PROJECT_ID, PROJECT_NAME) VALUES (3, 'Project');
+
+CREATE TABLE DEPARTMENTS (
+	DEPARTMENT_ID	number(9)	not null constraint department_pk primary key,
+	DEPARTMENT_NAME		varchar2(100)	not null
+	);
+INSERT INTO DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME) VALUES (1, 'Development');
+INSERT INTO DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME) VALUES (2, 'Management');
+INSERT INTO DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME) VALUES (3, 'HR');
+
+CREATE TABLE EMPLOYEES (
+	EMPLOYEE_ID	number(9)	not null constraint employee_pk primary key,
+	FIRST_NAME	varchar2(100)	not null,
+	LAST_NAME	varchar2(100)	not null,
+	DEPARTMENT_ID	number(9)	not null constraint department_id_fk references DEPARTMENTS
+	);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (1, 'Bilbo', 'Baggins', 1);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (2, 'Frodo', 'Baggins', 1);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (3, 'Gendalf', 'Gray', 1);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (4, 'Sauron', 'Black', 2);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (5, 'Teoden', 'Rohan', 2);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (6, 'Witch-king', 'Angmar', 3);
+INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID) VALUES (7, 'Khamul', 'East Shadow', 3);
+
+CREATE TABLE EMPLOYEES_PROJECTS (
+	EMPLOYEE_ID	number(9)	not null constraint employee_id_fk references EMPLOYEES,
+	PROJECT_ID	number(9)	not null constraint project_id_fk references PROJECTS
+	);
+ALTER TABLE EMPLOYEES_PROJECTS add constraint employee_project_pk primary key (EMPLOYEE_ID, PROJECT_ID);
+
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (1,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (2,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (2,2);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (3,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (3,2);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (3,3);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (4,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (4,2);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (5,3);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (6,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (6,2);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (6,3);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (7,1);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (7,2);
+INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID) VALUES (7,3);
+
+DROP TABLE EMPLOYEES_PROJECTS
+DROP TABLE EMPLOYEES
+DROP TABLE DEPARTMENTS
+DROP TABLE PROJECTS
+
+
+----------------------------------------------------------------------------------------------------------
+1. Выбрать всех работников с фамилией "Baggins".
+	SELECT * FROM EMPLOYEES
+		WHERE LAST_NAME='Baggins';
+
+2. Выбрать всех работников с фамилиями "Baggins", "Gray", "Angmar" (2 варианта). И отсортировать по имени.
+	SELECT * FROM EMPLOYEES
+		WHERE LAST_NAME='Baggins'
+		OR LAST_NAME='Gray'
+		OR LAST_NAME='Angmar'
+		ORDER BY FIRST_NAME;
+
+	SELECT * FROM EMPLOYEES
+		WHERE LAST_NAME IN ('Baggins', 'Gray', 'Angmar')
+		ORDER BY FIRST_NAME;
+
+3. Выбрать всех работников кроме "Sauron" и "Khamul". (2 варианта)
+	SELECT * FROM EMPLOYEES
+		WHERE FIRST_NAME<>'Sauron' 
+		AND FIRST_NAME<>'Khamul';
+
+	SELECT * FROM EMPLOYEES
+		WHERE FIRST_NAME NOT IN ('Sauron', 'Khamul');
+
+4. Выбрать всех работников у которых в имени есть буквы "od".
+	SELECT * FROM EMPLOYEES
+		WHERE FIRST_NAME LIKE '%od%';
+
+5. Выбрать всех работников с идентификаторами от 3 до 6 включительно. (2 варианта)
+	SELECT * FROM EMPLOYEES
+		WHERE EMPLOYEE_ID BETWEEN 3 AND 6;
+
+	SELECT * FROM EMPLOYEES
+		WHERE EMPLOYEE_ID>=3
+		AND EMPLOYEE_ID<=6;
+
+	SELECT * FROM EMPLOYEES
+		WHERE EMPLOYEE_ID IN (3, 4, 5, 6);
+
+6. Вывести имя, фамилию, название департамента для всех работников.
+	SELECT FIRST_NAME, LAST_NAME, DEPARTMENT_NAME
+		FROM EMPLOYEES
+		NATURAL JOIN DEPARTMENTS;
+
+7. Вывести имя, фамилию, название проекта для всех работников.
+	SELECT FIRST_NAME, LAST_NAME, PROJECT_NAME
+		FROM EMPLOYEES
+		NATURAL JOIN EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS;
+
+8. Вывести всех работников в проекте "Big Project", отсортировать по имени в обратном порядке.
+	SELECT * FROM EMPLOYEES
+		NATURAL JOIN EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS
+		WHERE NAME='Big Project'
+		ORDER BY FIRST_NAME DESC;
+
+9. Вывести все проекты "Frodo".
+	SELECT * FROM EMPLOYEES
+		NATURAL JOIN EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS
+		WHERE FIRST_NAME='Frodo';
+
+10. Вывести всех работников в проектах "Big Project" и "Project". Отсортировать по названию проекта, а затем имени работника.
+	SELECT * FROM EMPLOYEES
+		NATURAL JOIN EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS
+		WHERE NAME IN ('Big Project', 'Project')
+		ORDER BY NAME, FIRST_NAME;
+
+11. Вывести уникальные названия проектов, в которых работают "Baggins".
+	SELECT DISTINCT NAME PROJECTS_NAME FROM EMPLOYEES
+		NATURAL JOIN EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS
+		WHERE LAST_NAME='Baggins';
+
+12. Вывести имя, фамилию, название проекта, департамент для "Sauron" и "Khamul". Отсортировать по имени, затем проекту.
+	SELECT FIRST_NAME, LAST_NAME, PROJECT_NAME, DEPARTMENT_NAME
+		FROM EMPLOYEES_PROJECTS ep
+		JOIN EMPLOYEES e ON e.EMPLOYEE_ID=ep.EMPLOYEE_ID
+		JOIN PROJECTS p ON p.PROJECT_ID=ep.PROJECT_ID
+		JOIN DEPARTMENTS USING (DEPARTMENT_ID)
+		WHERE FIRST_NAME IN ('Sauron', 'Khamul')
+		ORDER BY FIRST_NAME, PROJECT_NAME;
+
+13. Вывести имя, фамилию, название проекта, департамент для департаментов "HR" и "Management".
+	SELECT FIRST_NAME, LAST_NAME, PROJECT_NAME, DEPARTMENT_NAME
+		FROM EMPLOYEES_PROJECTS
+		NATURAL JOIN EMPLOYEES
+		NATURAL JOIN PROJECTS
+		NATURAL JOIN DEPARTMENTS
+		WHERE DEPARTMENT_NAME IN ('HR', 'Management');
+
+14. Вывести количество разработчиков (название департамента, количество).
+	SELECT DEPARTMENT_NAME, COUNT(*)
+		FROM EMPLOYEES
+		NATURAL JOIN DEPARTMENTS
+		GROUP BY NAME;
+
+15. Вывести количество работников в каждом из проектов (название, количество).
+	SELECT PROJECT_NAME, COUNT(*)
+		FROM EMPLOYEES_PROJECTS
+		NATURAL JOIN PROJECTS
+		GROUP BY NAME;
+
+16. Вывести количество проектов у каждого работника (имя, фамилия, количество).
+	SELECT FIRST_NAME, LAST_NAME, COUNT(*)
+		FROM EMPLOYEES_PROJECTS
+		NATURAL JOIN EMPLOYEES
+		GROUP BY FIRST_NAME, LAST_NAME;
+
+17. Добавить 1 департамент.
+	INSERT INTO DEPARTMENTS (DEPARTMENT_ID, DEPARTMENT_NAME)
+		VALUES (4, 'Sales');
+
+18. Добавить 2 работников в разные проекты.
+	INSERT INTO EMPLOYEES_PROJECTS (EMPLOYEE_ID, PROJECT_ID)
+		VALUES (8, 1);
+
+	INSERT INTO EMPLOYEES_PROJECTS (EMPLOYEE_ID, PROJECT_ID)
+		VALUES (9, 2);
+
+19. Назначить работников выше в созданный департамент.
+	INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID)
+		VALUES (8, 'Mike', 'Fay', 4);
+
+	INSERT INTO EMPLOYEES (EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID)
+		VALUES (9, 'Nina', 'Vergas', 4);
+
+20. Обновить имя одного из созданных работников.
+	UPDATE EMPLOYEES
+		SET FIRST_NAME='Rachel', LAST_NAME=NULL
+		WHERE EMPLOYEE_ID=9;
+
+21. Добавить общий комментарий "Common comment" ко всем проектам.
+	UPDATE PROJECTS
+		SET COMMENTS='Common comment';
+
+22. Удалить комментарий у проектов "Big Project", "Another Project".
+	UPDATE PROJECTS
+		SET COMMENTS=NULL
+		WHERE PROJECT_NAME IN ('Big Project', 'Another Project');
+
+23. Добавить комментарий "Comment for Another Project" у проекта "Another Project".
+	UPDATE PROJECTS
+		SET COMMENTS='Comment for Another Project'
+		WHERE NAME='Another Project';
+
+24. Добавить новый проект "Temporary project" с комментарием "For deletion".
+	INSERT INTO PROJECTS (PROJECT_ID, PROJECT_NAME, COMMENTS)
+		VALUES (4, 'Temporary project', 'For deletion');
+
+25. Добавить нового разработчика "Big Dan" в проект "Temporary project".
+	INSERT INTO EMPLOYEES(EMPLOYEE_ID, FIRST_NAME, LAST_NAME, DEPARTMENT_ID)
+		VALUES (10, 'Big', 'Dan', 4);
+
+	INSERT INTO EMPLOYEES_PROJECTS(EMPLOYEE_ID, PROJECT_ID)
+		VALUES (10, 4);
+
+26. Обновить комментарий у "Temporary project" в "TODO: remove".
+	UPDATE PROJECTS
+		SET COMMENTS='TODO: remove'
+		WHERE NAME='Temporary project';
+
+27. Удалить проект "Temporary project" и его разработчика.
+	DELETE FROM PROJECTS
+		WHERE NAME='Temporary project';
+
+	DELETE FROM EMPLOYEES
+		WHERE EMPLOYEE_ID=10;
