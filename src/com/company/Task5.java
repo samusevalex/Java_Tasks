@@ -18,9 +18,9 @@ public class Task5 {
 	char[] a = "Hello world".toCharArray();
 	int len = a.length - 1;
 	for (int i = (len - 1)/2; i >= 0; i--){
-		a[i]^= a[len-i];
-		a[len-i]^= a[i];
-		a[i]^= a[len-i];
+		a[i]^= a[len-i];     a = a XOR b
+		a[len-i]^= a[i]; или b = a XOR b
+		a[i]^= a[len-i];     a = a XOR b
 	}
 Прибавить единицу к числу 321:
 	int a[] = {-1,3,2,1};
